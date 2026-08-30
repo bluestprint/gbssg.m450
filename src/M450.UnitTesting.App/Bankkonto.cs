@@ -10,6 +10,8 @@ public class Bankkonto
     public static double AktivZins { get; set; }
     public static double PassivZins { get; set; }
 
+    private double aufgelaufenerZins = 0;
+
     public Bankkonto(double guthaben)
     {
         Guthaben = guthaben;
@@ -26,11 +28,6 @@ public class Bankkonto
     public double Beziehe(double betrag)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(betrag);
-
-        if (betrag > Guthaben)
-        {
-            throw new InvalidOperationException("Zu wenig Guthaben auf dem Konto.");
-        }
         
         Guthaben -= betrag;
         return Guthaben;
@@ -39,11 +36,6 @@ public class Bankkonto
     public double Transferiere(Bankkonto konto, double betrag)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(betrag);
-
-        if (betrag > Guthaben)
-        {
-            throw new InvalidOperationException("Zu wenig Guthaben auf dem Konto.");
-        }
         
         Guthaben -= betrag;
         konto.ZahleEin(betrag);
@@ -53,21 +45,16 @@ public class Bankkonto
     public double SchreibeZinsGut(int anzTage)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(anzTage);
-    
-        double zins = Guthaben >= 0 ? AktivZins : PassivZins;
-        double zinsBetrag = Guthaben * zins * anzTage / 360;
-        Guthaben += zinsBetrag;
-    
-        return Guthaben;
+
+        double zinssatz = Guthaben >= 0 ? AktivZins : PassivZins;
+        aufgelaufenerZins += Guthaben * zinssatz * anzTage / 360;
+        
+        return aufgelaufenerZins;
     }
 
     public void SchliesseKontoAb()
     {
-        if (Guthaben != 0)
-        {
-            throw new InvalidOperationException("Konto kann nur mit 0 geschlossen werden.");
-        }
-        
-        Guthaben = double.NaN;
+        Guthaben += aufgelaufenerZins;
+        aufgelaufenerZins = 0;
     }
 }
