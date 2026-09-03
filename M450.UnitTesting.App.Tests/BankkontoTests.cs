@@ -1,6 +1,4 @@
-﻿using Konto = M450.UnitTesting.App.Bankkonto;
-
-namespace M450.UnitTesting.App.Tests;
+﻿namespace M450.UnitTesting.App.Tests;
 
 public sealed class BankkontoTests
 {
@@ -157,8 +155,8 @@ public sealed class BankkontoTests
         // Arrange
 
         // Act
-        var aktivZinsException = Record.Exception(() => new Konto(-0.1m, 5m));
-        var passivZinsException = Record.Exception(() => new Konto(1m, -0.1m));
+        var aktivZinsException = Record.Exception(() => new Bankkonto(-0.1m, 5m));
+        var passivZinsException = Record.Exception(() => new Bankkonto(1m, -0.1m));
 
         // Assert
         Assert.IsType<ArgumentOutOfRangeException>(aktivZinsException);
@@ -213,11 +211,11 @@ public sealed class BankkontoTests
     // Diese Hilfsmethode vermeidet wiederholte Konstruktoraufrufe mit denselben
     // Standardwerten. Einzelne Tests können benötigte Werte über benannte Parameter
     // gezielt ändern und ihr Arrange-Abschnitt bleibt kurz und gut lesbar.
-    private static Konto NeuesKonto(
+    private static Bankkonto NeuesKonto(
         decimal aktivZins = 1.5m,
         decimal passivZins = 5m,
         decimal startGuthaben = 0m)
     {
-        return new Konto(aktivZins, passivZins, startGuthaben);
+        return new Bankkonto(aktivZins, passivZins, startGuthaben);
     }
 }
