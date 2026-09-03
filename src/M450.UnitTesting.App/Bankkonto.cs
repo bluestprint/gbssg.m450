@@ -4,57 +4,66 @@ using System;
 
 public class Bankkonto
 {
-    public string Kontonummer { get; } = Guid.NewGuid().ToString("N");
-    public double Guthaben { get; private set; } = 0;
+    public string KontoNummer { get; } = Guid.NewGuid().ToString("N");
+    public decimal Guthaben { get; private set; }
 
-    public static double AktivZins { get; set; }
-    public static double PassivZins { get; set; }
+    public decimal AktivZins { get; }
+    public decimal PassivZins { get; }
 
-    private double aufgelaufenerZins = 0;
+    public decimal AufgelaufenerZins;
 
-    public Bankkonto(double guthaben)
+    public Bankkonto( decimal aktivZins, decimal passivZins, decimal guthaben = 0 )
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(aktivZins);
+        ArgumentOutOfRangeException.ThrowIfNegative(passivZins);
+
+        AktivZins = aktivZins;
+        PassivZins = passivZins;
         Guthaben = guthaben;
     }
 
-    public double ZahleEin(double betrag)
+    public decimal ZahleEin(decimal betrag)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(betrag);
-        
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(betrag);
+
         Guthaben += betrag;
         return Guthaben;
     }
 
-    public double Beziehe(double betrag)
+    public decimal Beziehe(decimal betrag)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(betrag);
-        
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(betrag);
+
         Guthaben -= betrag;
         return Guthaben;
     }
 
-    public double Transferiere(Bankkonto konto, double betrag)
+    public decimal Transferiere(Bankkonto konto, decimal betrag)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(betrag);
-        
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(betrag);
+        if (konto == this)
+        {
+            throw new ArgumentException("Quell- und Zielkonto dürfen nicht identisch sein.", nameof(konto));
+        }
+
         Guthaben -= betrag;
         konto.ZahleEin(betrag);
         return Guthaben;
     }
 
-    public double SchreibeZinsGut(int anzTage)
+    public decimal SchreibeZinsGut(int anzTage)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(anzTage);
 
-        double zinssatz = Guthaben >= 0 ? AktivZins : PassivZins;
-        aufgelaufenerZins += Guthaben * zinssatz * anzTage / 360;
-        
-        return aufgelaufenerZins;
+        decimal zinssatz = Guthaben >= 0 ? AktivZins : PassivZins;
+        AufgelaufenerZins += Guthaben * (zinssatz / 100) * anzTage / 360;
+
+        return AufgelaufenerZins;
     }
 
     public void SchliesseKontoAb()
     {
-        Guthaben += aufgelaufenerZins;
-        aufgelaufenerZins = 0;
+        Guthaben += AufgelaufenerZins;
+        AufgelaufenerZins = 0;
     }
 }
